@@ -12,6 +12,23 @@ if ( ! isset( $content_width ) ) {
 	$content_width = 640; /* pixels */
 }
 
+if ( ! function_exists( 'afterthought_settings' ) ) :
+/**
+ * Gets any settings that shouldn't be included in VCS
+ *
+ * @return mixed The requested setting
+ */
+function afterthought_settings($setting) {
+    static $settings;
+    if ( !isset($settings) ) {
+        $settings_doc = get_stylesheet_directory() . '/settings.php';
+        if ( !file_exists($settings_doc) ) die('Settings File Required for theme');
+        $settings = include get_stylesheet_directory() . '/settings.php';
+    }
+    return $settings[$setting];
+}
+endif;
+
 if ( ! function_exists( 'afterthought_setup' ) ) :
 /**
  * Sets up theme defaults and registers support for various WordPress features.
@@ -62,10 +79,10 @@ function afterthought_setup() {
 	) );
 
 	// Set up the WordPress core custom background feature.
-	add_theme_support( 'custom-background', apply_filters( 'afterthought_custom_background_args', array(
-		'default-color' => 'ffffff',
-		'default-image' => '',
-	) ) );
+	// add_theme_support( 'custom-background', apply_filters( 'afterthought_custom_background_args', array(
+	// 	'default-color' => 'ffffff',
+	// 	'default-image' => '',
+	// ) ) );
 }
 endif; // afterthought_setup
 add_action( 'after_setup_theme', 'afterthought_setup' );
@@ -92,8 +109,15 @@ add_action( 'widgets_init', 'afterthought_widgets_init' );
  * Enqueue scripts and styles.
  */
 function afterthought_scripts() {
-	wp_enqueue_style( 'afterthought-style', get_stylesheet_uri() );
+	wp_register_style( 'avenir', afterthought_settings('font-url') );
 
+	if ( is_admin() ) {
+		wp_enqueue_style( 'afterthought-style', get_stylesheet_uri() );
+	} else {
+		wp_enqueue_style( 'afterthought-style', get_stylesheet_directory_uri() . '/css/style.css', array( 'avenir' ) );
+	}
+
+	wp_enqueue_script( 'bootstrap', get_stylesheet_directory_uri() . '/bower_components/bootstrap-sass-official/assets/javascripts/bootstrap.js', array( 'jquery' ), '3.3.0', true );
 	wp_enqueue_script( 'afterthought-navigation', get_template_directory_uri() . '/js/navigation.js', array(), '20120206', true );
 
 	wp_enqueue_script( 'afterthought-skip-link-focus-fix', get_template_directory_uri() . '/js/skip-link-focus-fix.js', array(), '20130115', true );
@@ -122,9 +146,9 @@ require get_template_directory() . '/inc/extras.php';
 /**
  * Customizer additions.
  */
-require get_template_directory() . '/inc/customizer.php';
+// require get_template_directory() . '/inc/customizer.php';
 
 /**
  * Load Jetpack compatibility file.
  */
-require get_template_directory() . '/inc/jetpack.php';
+// require get_template_directory() . '/inc/jetpack.php';

@@ -1,1 +1,5 @@
 bower_components
+settings.php
+node_modules
+.sass-cache
+/css
